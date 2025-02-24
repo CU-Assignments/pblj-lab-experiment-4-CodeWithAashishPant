@@ -1,0 +1,90 @@
+import java.util.*;
+
+class Card {
+    String suit;
+    String rank;
+
+    public Card(String rank, String suit) {
+        this.rank = rank;
+        this.suit = suit;
+    }
+
+    @Override
+    public String toString() {
+        return rank + " of " + suit;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Card card = (Card) obj;
+        return Objects.equals(rank, card.rank) && Objects.equals(suit, card.suit);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(rank, suit);
+    }
+}
+
+public class CardCollectionSystem {
+    private static final Map<String, Set<Card>> cardCollection = new HashMap<>();
+
+    public static void addCard(String rank, String suit) {
+        cardCollection.putIfAbsent(suit, new HashSet<>());
+        Card newCard = new Card(rank, suit);
+        if (!cardCollection.get(suit).add(newCard)) {
+            System.out.println("Error: Card \"" + newCard + "\" already exists.");
+            return;
+        }
+        System.out.println("Card added: " + newCard);
+    }
+
+    public static void findCardsBySuit(String suit) {
+        if (!cardCollection.containsKey(suit) || cardCollection.get(suit).isEmpty()) {
+            System.out.println("No cards found for " + suit + ".");
+            return;
+        }
+        for (Card card : cardCollection.get(suit)) {
+            System.out.println(card);
+        }
+    }
+
+    public static void displayAllCards() {
+        if (cardCollection.isEmpty()) {
+            System.out.println("No cards found.");
+            return;
+        }
+        for (Set<Card> cards : cardCollection.values()) {
+            for (Card card : cards) {
+                System.out.println(card);
+            }
+        }
+    }
+
+    public static void removeCard(String rank, String suit) {
+        if (cardCollection.containsKey(suit) && cardCollection.get(suit).remove(new Card(rank, suit))) {
+            System.out.println("Card removed: " + rank + " of " + suit);
+            if (cardCollection.get(suit).isEmpty()) {
+                cardCollection.remove(suit);
+            }
+        } else {
+            System.out.println("Error: Card \"" + rank + " of " + suit + "\" not found.");
+        }
+    }
+
+    public static void main(String[] args) {
+        displayAllCards();
+        addCard("Ace", "Spades");
+        addCard("King", "Hearts");
+        addCard("10", "Diamonds");
+        addCard("5", "Clubs");
+        displayAllCards();
+        findCardsBySuit("Hearts");
+        findCardsBySuit("Diamonds");
+        addCard("King", "Hearts");
+        removeCard("10", "Diamonds");
+        displayAllCards();
+    }
+}
