@@ -33,6 +33,83 @@ Without synchronized, two threads might book the same seat simultaneously, causi
 🔹 Why Use Thread Priorities?
 Setting higher priority for VIP users ensures their bookings are processed first, simulating real-world priority-based bookings.
 
+//Code
+import java.util.concurrent.locks.*;
+
+class TicketBookingSystem {
+    private final boolean[] seats;
+    private final Lock lock = new ReentrantLock();
+
+    public TicketBookingSystem(int totalSeats) {
+        this.seats = new boolean[totalSeats];
+    }
+
+    public synchronized void bookSeat(String user, int seatNumber, boolean isVIP) {
+        if (seatNumber < 1 || seatNumber > seats.length) {
+            System.out.println(user + ": Invalid seat number!");
+            return;
+        }
+        if (seats[seatNumber - 1]) {
+            System.out.println(user + ": Seat " + seatNumber + " is already booked!");
+            return;
+        }
+        seats[seatNumber - 1] = true;
+        System.out.println(user + " booked seat " + seatNumber);
+    }
+}
+
+class User extends Thread {
+    private final TicketBookingSystem system;
+    private final String userName;
+    private final int seatNumber;
+    private final boolean isVIP;
+
+    public User(TicketBookingSystem system, String userName, int seatNumber, boolean isVIP) {
+        this.system = system;
+        this.userName = userName;
+        this.seatNumber = seatNumber;
+        this.isVIP = isVIP;
+        if (isVIP) {
+            setPriority(Thread.MAX_PRIORITY);
+        } else {
+            setPriority(Thread.NORM_PRIORITY);
+        }
+    }
+
+    @Override
+    public void run() {
+        system.bookSeat(userName, seatNumber, isVIP);
+    }
+}
+
+public class TicketBookingApp {
+    public static void main(String[] args) {
+        TicketBookingSystem system = new TicketBookingSystem(5);
+
+        User u1 = new User(system, "Anish (VIP)", 1, true);
+        User u2 = new User(system, "Bobby (Regular)", 2, false);
+        User u3 = new User(system, "Charlie (VIP)", 3, true);
+        User u4 = new User(system, "Bobby (Regular)", 4, false);
+        User u5 = new User(system, "Anish (VIP)", 4, true);
+        User u6 = new User(system, "Bobby (Regular)", 1, false);
+        User u7 = new User(system, "New User (Regular)", 3, false);
+        User u8 = new User(system, "Invalid User", 0, false);
+        User u9 = new User(system, "Invalid User", 6, false);
+        User u10 = new User(system, "Simultaneous User", 5, false);
+        
+        u1.start();
+        u2.start();
+        u3.start();
+        u4.start();
+        u5.start();
+        u6.start();
+        u7.start();
+        u8.start();
+        u9.start();
+        u10.start();
+    }
+}
+
 Test Cases
 
 Test Case 1: No Seats Available Initially
